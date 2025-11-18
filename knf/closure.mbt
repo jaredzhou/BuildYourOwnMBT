@@ -28,7 +28,7 @@ pub fn KnfClosure::to_string(self : KnfClosure, ident? : Int = 0) -> String {
   })
   sb.write_string(param_strs.join(", "))
   sb.write_string(") -> \{self.ret_ty} ")
-  sb.write_string(self.body.to_string(ident))
+  sb.write_string(self.body.nested_to_string())
   sb.to_string()
 }
 
@@ -37,7 +37,18 @@ pub fn Context::local_function_to_knf(
   self : Context,
   local_function : @typecheck.LocalFunction,
 ) -> KnfClosure raise KnfTransformError {
-  ignore(self)
-  ignore(local_function)
-  raise KnfTransformError("LocalFunction Knf transformation not implemented")
+  let params = local_function.param_list.map(param => {
+    let (name, ty) = param
+    let ty = self.typekind_to_knf(ty.kind)
+    let name = self.add_new_name(name, ty)
+    (name, ty)
+  })
+  let ret_ty = self.typekind_to_knf(local_function.ret_ty.kind)
+  let func_ty = Type::Function(params.map(param => param.1), ret_ty)
+  let func_name = self.add_new_name(local_function.fname, func_ty)
+  self.enter_scope()
+  let body = self.block_expr_to_knf(local_function.body)
+  let captured_vars = self.name_env.capture
+  self.exit_scope()
+  KnfClosure::{ name: func_name, params, ret_ty, body, captured_vars }
 }

@@ -1,6 +1,7 @@
 {
   "import": [
     "moonbitlang/MiniMoonbit/lexer",
+    "moonbitlang/x/stack"
   ],
   "warn-list" : "-28"
 }

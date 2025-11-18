@@ -38,9 +38,22 @@ pub fn Context::typekind_to_knf(
   self : Context,
   tk : @typecheck.TypeKind,
 ) -> Type raise KnfTransformError {
-  ignore(self)
-  ignore(tk)
-  raise KnfTransformError("typekind_to_knf Not implemented")
+  match tk {
+    Unit => Type::Unit
+    Bool => Type::Bool
+    Int => Type::Int
+    Double => Type::Double
+    String => Type::String
+    Tuple(types) => Type::Tuple(types.map(ty => self.typekind_to_knf(ty)))
+    Array(ty) => Type::Array(self.typekind_to_knf(ty))
+    Function(params, ret) =>
+      Type::Function(
+        params.map(ty => self.typekind_to_knf(ty)),
+        self.typekind_to_knf(ret),
+      )
+    Struct(name) => Type::Struct(name)
+    _ => raise KnfTransformError("Unsupported type kind: \{tk}")
+  }
 }
 
 ///|
@@ -48,7 +61,5 @@ pub fn Context::type_to_knf(
   self : Context,
   t : @typecheck.Type,
 ) -> Type raise KnfTransformError {
-  ignore(self)
-  ignore(t)
-  raise KnfTransformError("type_to_knf Not implemented")
+  self.typekind_to_knf(t.kind)
 }

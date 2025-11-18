@@ -94,9 +94,53 @@ pub fn Context::expr_to_knf(
   self : Context,
   expr : @typecheck.Expr,
 ) -> (Array[KnfStmt], KnfExpr) raise KnfTransformError {
-  ignore(self)
-  ignore(expr)
-  raise KnfTransformError("expr_to_knf not implemented")
+  match expr.kind {
+    ApplyExpr(apply_expr) => self.apply_expr_to_knf(apply_expr)
+    BlockExpr(block_expr) => ...
+    NotExpr(not_expr) => {
+      let (stmts, knf_expr) = self.expr_to_knf(not_expr)
+      let ty = self.typekind_to_knf(not_expr.ty)
+      let name = self.add_temp(ty)
+      stmts.push(KnfStmt::Let(name, ty, knf_expr))
+      (stmts, KnfExpr::Not(name))
+    }
+    NegExpr(neg_expr) => {
+      let (stmts, knf_expr) = self.expr_to_knf(neg_expr)
+      let ty = self.typekind_to_knf(neg_expr.ty)
+      let name = self.add_temp(ty)
+      stmts.push(KnfStmt::Let(name, ty, knf_expr))
+      (stmts, KnfExpr::Neg(name))
+    }
+    BinaryExpr(binary_op, lhs, rhs) => {
+      let (stmts, lhs_expr) = self.expr_to_knf(lhs)
+      let lhs_ty = self.typekind_to_knf(lhs.ty)
+      let lhs_name = self.expr_to_knf_name(lhs_expr, lhs_ty, stmts)
+      let (rhs_stmts, rhs_expr) = self.expr_to_knf(rhs)
+      let rhs_ty = self.typekind_to_knf(rhs.ty)
+      stmts.append(rhs_stmts)
+      let rhs_name = self.expr_to_knf_name(rhs_expr, rhs_ty, stmts)
+      (stmts, KnfExpr::Binary(binop_to_knf(binary_op), lhs_name, rhs_name))
+    }
+    IfExpr(if_expr) => self.if_expr_to_knf(if_expr)
+    _ => raise KnfTransformError("Unsupported expr kind: \{expr.kind}")
+  }
+}
+
+///|
+fn Context::expr_to_knf_name(
+  self : Context,
+  expr : KnfExpr,
+  ty : Type,
+  stmts : Array[KnfStmt],
+) -> Name raise KnfTransformError {
+  match expr {
+    Ident(name) => name
+    _ => {
+      let name = self.add_temp(ty)
+      stmts.push(KnfStmt::Let(name, ty, expr))
+      name
+    }
+  }
 }
 
 ///|
@@ -131,14 +175,14 @@ pub fn KnfExpr::to_string(self : KnfExpr, ident? : Int = 0) -> String {
       let elems_strs = elem_names.map(elem => elem.to_string()).join(", ")
       "(\{elems_strs})"
     }
-    Block(block) => block.to_string(ident)
+    Block(block) => block.to_string()
     If(cond, then_block, else_block) => {
       let cond_str = cond.to_string()
-      let then_str : String = then_block.to_string(ident)
+      let then_str : String = then_block.nested_to_string()
       if else_block.stmts.is_empty() {
         "if \{cond_str} \{then_str}"
       } else {
-        let else_str : String = else_block.to_string(ident)
+        let else_str : String = else_block.nested_to_string()
         "if \{cond_str} \{then_str} else \{else_str}"
       }
     }

@@ -17,9 +17,29 @@ pub fn Context::stmt_to_knf(
   self : Context,
   stmt : @typecheck.Stmt,
 ) -> Array[KnfStmt] raise KnfTransformError {
-  ignore(self)
-  ignore(stmt)
-  raise KnfTransformError("stmt_to_knf not implemented")
+  match stmt.kind {
+    LetStmt(let_stmt) => self.let_stmt_to_knf(let_stmt)
+    LetMutStmt(let_mut_stmt) => self.let_mut_stmt_to_knf(let_mut_stmt)
+    AssignStmt(assign_stmt) => self.assign_stmt_to_knf(assign_stmt)
+    ExprStmt(expr) => {
+      let (expr_stmts, expr_knf) = self.expr_to_knf(expr)
+      let stmts = []
+      stmts.append(expr_stmts)
+      stmts.push(KnfStmt::ExprStmt(expr_knf))
+      stmts
+    }
+    ReturnStmt(Some(return_expr)) => {
+      let (expr_stmts, expr_knf) = self.expr_to_knf(return_expr)
+      let stmts = []
+      stmts.append(expr_stmts)
+      stmts.push(KnfStmt::Return(expr_knf))
+      stmts
+    }
+    ReturnStmt(None) => [KnfStmt::ReturnUnit]
+    WhileStmt(while_stmt) => self.while_stmt_to_knf(while_stmt)
+    LocalFunction(local_function) =>
+      [ClosureDef(self.local_function_to_knf(local_function))]
+  }
 }
 
 ///|
@@ -35,11 +55,11 @@ pub fn KnfStmt::to_string(self : KnfStmt, ident? : Int = 0) -> String {
     While(cond_block, body_block) =>
       if cond_block.stmts.length() <= 3 {
         let cond_str = cond_block.nested_to_string()
-        let body_str = body_block.to_string(ident)
+        let body_str = body_block.nested_to_string()
         "while \{cond_str} \{body_str}"
       } else {
-        let cond_str = cond_block.to_string(ident)
-        let body_str = body_block.to_string(ident)
+        let cond_str = cond_block.nested_to_string()
+        let body_str = body_block.nested_to_string()
         "while \{cond_str} \{body_str}"
       }
     ExprStmt(expr) => {

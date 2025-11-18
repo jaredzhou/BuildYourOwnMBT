@@ -2,7 +2,7 @@
 pub(all) suberror KnfTransformError String derive(Show)
 
 ///|
-pub typealias @either.Either
+pub using @either {type Either}
 
 ///|
 pub(all) struct Name {
@@ -54,7 +54,13 @@ pub fn Env::get(self : Env, name : String) -> Name? {
     Some((n, _)) => Some(n)
     None =>
       match self.parent {
-        Some(p) => p.get(name)
+        Some(p) => {
+          let name = p.get(name)
+          if name is Some(name) {
+            self.capture.set(name, self.get_name_type(name).unwrap())
+          }
+          name
+        }
         None => None
       }
   }
@@ -79,9 +85,14 @@ pub fn Context::new() -> Context {
 
 ///|
 pub fn Context::lookup_name(self : Context, s : String) -> (Name, Type)? {
-  ignore(self) // Placeholder
-  ignore(s)
-  None
+  match self.name_env.get(s) {
+    Some(name) => Some((name, self.name_env.get_name_type(name).unwrap()))
+    None =>
+      match self.globals.get(s) {
+        Some(ty) => Some((Name::{ id: s, slot: 0 }, ty))
+        None => None
+      }
+  }
 }
 
 ///|
