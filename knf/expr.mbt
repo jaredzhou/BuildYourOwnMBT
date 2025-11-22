@@ -96,7 +96,10 @@ pub fn Context::expr_to_knf(
 ) -> (Array[KnfStmt], KnfExpr) raise KnfTransformError {
   match expr.kind {
     ApplyExpr(apply_expr) => self.apply_expr_to_knf(apply_expr)
-    BlockExpr(block_expr) => ...
+    BlockExpr(block_expr) => {
+      let block = self.block_expr_to_knf(block_expr)
+      ([], Block(block))
+    }
     NotExpr(not_expr) => {
       let (stmts, knf_expr) = self.expr_to_knf(not_expr)
       let ty = self.typekind_to_knf(not_expr.ty)

@@ -10,7 +10,7 @@ pub fn parse_top_let(
   tokens : ArrayView[Token],
 ) -> (TopLet, ArrayView[Token]) raise ParseError {
   guard tokens is [{ kind: Keyword(Let) }, { kind: Lower(name) }, .. rest] else {
-    raise ParseError("Unexpected token: \{tokens[0]}")
+    raise ParseError("top let Unexpected token: \{tokens[0]}")
   }
   let (ty, rest) = if rest is [{ kind: Symbol(":") }, .. rest] {
     let (ty, rest) = parse_type(rest)
@@ -19,11 +19,11 @@ pub fn parse_top_let(
     (None, rest)
   }
   guard rest is [{ kind: AssignOp(Assign) }, .. rest] else {
-    raise ParseError("Unexpected token: \{rest[0]}")
+    raise ParseError("top let Unexpected token: \{rest[0]}")
   }
   let (expr, rest) = parse_expr(rest)
   guard rest is [{ kind: Symbol(";") }, .. rest] else {
-    raise ParseError("Unexpected token: \{rest[0]}")
+    raise ParseError("top let Unexpected token: \{rest[0]}")
   }
   (TopLet::{ name, ty, expr }, rest)
 }

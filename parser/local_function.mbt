@@ -30,7 +30,7 @@ pub fn parse_param_list(
   tokens : ArrayView[Token],
 ) -> (Array[Param], ArrayView[Token]) raise ParseError {
   guard tokens is [{ kind: Bracket('(') }, .. tokens] else {
-    raise ParseError("Unexpected token: \{tokens[0]}")
+    raise ParseError("param list Unexpected token: \{tokens[0]}")
   }
   let param_list : Array[Param] = []
   loop tokens {
@@ -39,7 +39,7 @@ pub fn parse_param_list(
       // 处理逗号后的情况：支持尾随逗号，不允许连续逗号，开头逗号，多个尾随逗号
       match rest {
         [{ kind: Symbol(",") }, .. rest] =>
-          raise ParseError("Unexpected token: \{rest[0]}")
+          raise ParseError("param list Unexpected token: \{rest[0]}")
         _ => continue rest
       }
     // 解析普通表达式

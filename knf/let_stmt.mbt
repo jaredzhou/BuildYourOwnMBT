@@ -35,22 +35,27 @@ fn Context::bind_pattern_to_expr(
       stmts
     }
     Tuple(patterns) => {
-      guard pattern_ty is Tuple(types) &&
-        expr is TupleLiteral(names) &&
-        patterns.length() == names.length() &&
-        patterns.length() == types.length() else {
+      guard pattern_ty is Tuple(types) && patterns.length() == types.length() else {
         raise KnfTransformError(
-          "pattern type mismatch: \{pattern_ty} and \{pattern}",
+          "pattern type mismatch: \{pattern_ty} and \{pattern} and expr: \{expr}",
         )
       }
+      let names = match expr {
+        TupleLiteral(names) => names.map(name => KnfExpr::Ident(name))
+        Ident(name) => {
+          let ty = self.name_env.get_name_type(name).unwrap()
+          guard ty is Tuple(types) else {
+            raise KnfTransformError("name is not a tuple: \{name}")
+          }
+          types.mapi((i, _) => KnfExpr::TupleAccess(name, i))
+        }
+        _ => raise KnfTransformError("expr is not a tuple literal")
+      }
       patterns.eachi((i, pattern) => {
-        let pstmts = self.bind_pattern_to_expr(
-          pattern,
-          types[i],
-          Ident(names[i]),
-        )
+        let pstmts = self.bind_pattern_to_expr(pattern, types[i], names[i])
         stmts.append(pstmts)
       })
+      println("bind_pattern_to_expr stmts: \{stmts}")
       stmts
     }
   }

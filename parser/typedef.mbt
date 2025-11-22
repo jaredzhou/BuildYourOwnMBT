@@ -44,13 +44,13 @@ pub fn parse_type(
     [{ kind: Upper("Array") }, { kind: Bracket('[') }, .. rest] => {
       let (ty, rest) = parse_type(rest)
       guard rest is [{ kind: Bracket(']') }, .. rest] else {
-        raise ParseError("Unexpected token: \{rest[0]}")
+        raise ParseError("type  Unexpected token: \{rest[0]}")
       }
       (Type::new(TypeKind::Array(ty.kind)), rest)
     }
     [{ kind: Upper(name) }, .. rest] =>
       (Type::new(TypeKind::Defined(name)), rest)
-    _ => raise ParseError("Unexpected token: \{tokens[0]}")
+    _ => raise ParseError("type Unexpected token: \{tokens[0]}")
   }
 }
 
@@ -83,7 +83,7 @@ pub fn parse_list_type(
   tokens : ArrayView[Token],
 ) -> (Array[TypeKind], ArrayView[Token]) raise ParseError {
   guard tokens is [{ kind: lb }, .. tokens] && lb == lbracket else {
-    raise ParseError("Unexpected token: \{tokens[0]}")
+    raise ParseError("list type Unexpected token: \{tokens[0]}")
   }
   let types : Array[TypeKind] = []
   loop tokens {
@@ -101,7 +101,7 @@ pub fn parse_list_type(
       match rest {
         [{ kind: Symbol(",") }, .. rest] => continue rest
         [{ kind: rb }, ..] if rb == rbracket => continue rest
-        _ => raise ParseError("Unexpected token: \{rest[0]}")
+        _ => raise ParseError("list type Unexpected token: \{rest[0]}")
       }
     }
   }

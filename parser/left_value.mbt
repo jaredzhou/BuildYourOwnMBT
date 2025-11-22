@@ -30,13 +30,13 @@ pub fn parse_left_value(
         LeftValueKind::ArrayAccess(left_value, index_expr),
       )
       guard rest is [{ kind: Bracket(']') }, .. rest] else {
-        raise ParseError("Unexpected token: \{rest[0]}")
+        raise ParseError("left value Unexpected token: \{rest[0]}")
       }
       continue rest
     }
     [{ kind: Symbol(".") }, .. rest] => {
       guard rest is [{ kind: Lower(field) }, .. rest] else {
-        raise ParseError("Unexpected token: \{rest[0]}")
+        raise ParseError("left value Unexpected token: \{rest[0]}")
       }
       left_value = LeftValue::new(LeftValueKind::FieldAccess(left_value, field))
       continue rest

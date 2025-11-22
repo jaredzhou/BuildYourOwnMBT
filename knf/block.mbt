@@ -11,6 +11,7 @@ pub fn Context::block_expr_to_knf(
 ) -> KnfBlock raise KnfTransformError {
   let stmts = expr.stmts.map(stmt => self.stmt_to_knf(stmt)).flatten()
   let ty = self.typekind_to_knf(expr.ty)
+  // println("block_expr_to_knf stmts: \{stmts}")
   KnfBlock::{ ty, stmts }
 }
 
@@ -28,5 +29,5 @@ pub fn KnfBlock::nested_to_string(self : KnfBlock) -> String {
 
 ///|
 pub impl Show for KnfBlock with output(self, logger) {
-  logger.write_string(self.to_string())
+  logger.write_string(self.nested_to_string())
 }

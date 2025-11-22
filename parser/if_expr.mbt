@@ -10,7 +10,7 @@ pub fn parse_if_expr(
   tokens : ArrayView[Token],
 ) -> (IfExpr, ArrayView[Token]) raise ParseError {
   guard tokens is [{ kind: Keyword(If) }, .. rest] else {
-    raise ParseError("1Unexpected token: \{tokens[0]}")
+    raise ParseError("if Unexpected token: \{tokens[0]}")
   }
   let (cond, rest) = parse_expr(rest)
   let (then_block, rest) = parse_block_expr(rest)
@@ -24,10 +24,11 @@ pub fn parse_if_expr(
         let (block_expr, rest) = parse_block_expr(rest)
         (Some(Right(block_expr)), rest)
       }
-      _ => raise ParseError("2Unexpected token: \{rest[0]}")
+      _ => raise ParseError("if Unexpected token: \{rest[0]}")
     }
   } else {
     (None, rest)
   }
+  // println("parse if expr, \{cond}, \{then_block}, \{else_block}")
   (IfExpr::{ cond, then_block, else_block }, rest)
 }

@@ -15,6 +15,15 @@ pub(all) enum StmtKind {
 } derive(Show, Eq)
 
 ///|
+/// expr后面可能跟一个；比如：
+/// a+b;
+/// x(1);
+/// 也可能什么都不跟;比如:
+/// if (x) {
+///   x = 1;
+/// } else {
+///   x = 2;
+/// }
 fn parse_expr_stmt(
   tokens : ArrayView[Token],
 ) -> (Stmt, ArrayView[Token]) raise ParseError {
@@ -22,9 +31,9 @@ fn parse_expr_stmt(
   match rest {
     [{ kind: Symbol(";") }, .. rest] =>
       (Stmt::{ kind: StmtKind::ExprStmt(expr) }, rest)
-    [{ kind: Bracket('}') }, ..] =>
-      (Stmt::{ kind: StmtKind::ExprStmt(expr) }, rest)
-    _ => raise ParseError("Unexpected token: \{rest[0]}")
+    // [{ kind: Bracket('}') }, .. rest] =>
+    //   (Stmt::{ kind: StmtKind::ExprStmt(expr) }, rest)
+    _ => (Stmt::{ kind: StmtKind::ExprStmt(expr) }, rest)
   }
 }
 
@@ -47,7 +56,7 @@ pub fn parse_stmt(
       } else {
         let (expr, rest) = parse_expr(rest)
         guard rest is [{ kind: Symbol(";") }, .. rest] else {
-          raise ParseError("Unexpected token: \{rest[0]}")
+          raise ParseError("return stmt Unexpected token: \{rest[0]}")
         }
         (Some(expr), rest)
       }

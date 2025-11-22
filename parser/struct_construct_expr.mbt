@@ -36,7 +36,7 @@ pub fn parse_struct_construct(
       match rest {
         [{ kind: Symbol(",") }, .. rest] => continue rest
         [{ kind: Bracket('}') }, ..] => continue rest
-        _ => raise ParseError("Unexpected token: \{rest[0]}")
+        _ => raise ParseError("struct construct Unexpected token: \{rest[0]}")
       }
     }
   }

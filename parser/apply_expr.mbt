@@ -29,7 +29,7 @@ pub fn parse_apply_expr(
         ApplyExprKind::ArrayAccess(apply_expr, index_expr),
       )
       guard rest is [{ kind: Bracket(']') }, .. rest] else {
-        raise ParseError("Unexpected token: \{rest[0]}")
+        raise ParseError("apply Unexpected token: \{rest[0]}")
       }
       continue rest
     }
@@ -40,7 +40,7 @@ pub fn parse_apply_expr(
     }
     [{ kind: Symbol(".") }, .. rest] => {
       guard rest is [{ kind: Lower(field) }, .. rest] else {
-        raise ParseError("Unexpected token: \{rest[0]}")
+        raise ParseError("apply Unexpected token: \{rest[0]}")
       }
       apply_expr = ApplyExpr::new(ApplyExprKind::FieldAccess(apply_expr, field))
       continue rest

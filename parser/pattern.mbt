@@ -28,7 +28,7 @@ pub fn parse_pattern(
       let (patterns, rest) = parse_list_pattern(rest)
       (Pattern::new(PatternKind::Tuple(patterns)), rest)
     }
-    _ => raise ParseError("Unexpected token: \{tokens[0]}")
+    _ => raise ParseError("pattern Unexpected token: \{tokens[0]}")
   }
 }
 
@@ -37,7 +37,7 @@ pub fn parse_list_pattern(
   tokens : ArrayView[Token],
 ) -> (Array[Pattern], ArrayView[Token]) raise ParseError {
   guard tokens is [{ kind: lb }, .. tokens] && lb == Bracket('(') else {
-    raise ParseError("Unexpected token: \{tokens[0]}")
+    raise ParseError("list pattern Unexpected token: \{tokens[0]}")
   }
   let patterns : Array[Pattern] = []
   loop tokens {
@@ -55,7 +55,7 @@ pub fn parse_list_pattern(
       match rest {
         [{ kind: Symbol(",") }, .. rest] => continue rest
         [{ kind: Bracket(')') }, ..] => continue rest
-        _ => raise ParseError("Unexpected token: \{rest[0]}")
+        _ => raise ParseError("list pattern Unexpected token: \{rest[0]}")
       }
     }
   }

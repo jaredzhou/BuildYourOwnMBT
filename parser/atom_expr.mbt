@@ -55,7 +55,7 @@ pub fn parse_atom_expr(
       let (exprs, rest) = parse_list_expr(Bracket('['), Bracket(']'), tokens)
       (AtomExpr::new(AtomExprKind::Array(exprs)), rest)
     }
-    rest => raise ParseError("Unexpected token: " + rest.to_string())
+    rest => raise ParseError("atom Unexpected token: " + rest.to_string())
   }
 }
 
@@ -72,15 +72,15 @@ fn parse_array_make_expr(
       { kind: Bracket('(') },
       .. rest,
     ] else {
-    raise ParseError("Unexpected token: \{tokens[0]}")
+    raise ParseError("array make Unexpected token: \{tokens[0]}")
   }
   let (size, rest) = parse_expr(rest)
   guard rest is [{ kind: Symbol(",") }, .. rest] else {
-    raise ParseError("Unexpected token: \{rest[0]}")
+    raise ParseError("array make Unexpected token: \{rest[0]}")
   }
   let (init, rest) = parse_expr(rest)
   guard rest is [{ kind: Bracket(')') }, .. rest] else {
-    raise ParseError("Unexpected token: \{rest[0]}")
+    raise ParseError("array make Unexpected token: \{rest[0]}")
   }
   (AtomExpr::new(AtomExprKind::ArrayMake(size, init)), rest)
 }
@@ -106,7 +106,7 @@ pub fn parse_list_expr(
   tokens : ArrayView[Token],
 ) -> (Array[Expr], ArrayView[Token]) raise ParseError {
   guard tokens is [{ kind: lb }, .. tokens] && lb == lbracket else {
-    raise ParseError("Unexpected token: \{tokens[0]}")
+    raise ParseError("list expr Unexpected token: \{tokens[0]}")
   }
   let exprs : Array[Expr] = []
   loop tokens {
@@ -124,7 +124,7 @@ pub fn parse_list_expr(
       match rest {
         [{ kind: Symbol(",") }, .. rest] => continue rest
         [{ kind: rb }, ..] if rb == rbracket => continue rest
-        _ => raise ParseError("Unexpected token: \{rest[0]}")
+        _ => raise ParseError("list expr Unexpected token: \{rest[0]}")
       }
     }
   }
